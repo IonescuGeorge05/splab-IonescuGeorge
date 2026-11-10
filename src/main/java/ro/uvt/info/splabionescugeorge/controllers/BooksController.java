@@ -19,6 +19,7 @@ import ro.uvt.info.splabionescugeorge.commands.DeleteBookCommand;
 import ro.uvt.info.splabionescugeorge.commands.GetAllBooksCommand;
 import ro.uvt.info.splabionescugeorge.commands.GetBookByIdCommand;
 import ro.uvt.info.splabionescugeorge.commands.UpdateBookCommand;
+import ro.uvt.info.splabionescugeorge.observer.AllBooksSubject;
 import ro.uvt.info.splabionescugeorge.persistence.CrudRepository;
 
 import java.util.List;
@@ -28,9 +29,12 @@ import java.util.List;
 public class BooksController {
 
     private final CommandContext context;
+    private final AllBooksSubject allBooksSubject;
 
-    public BooksController(CrudRepository<Book, Integer> booksRepository, CrudRepository<Author, Integer> authorsRepository) {
+    public BooksController(CrudRepository<Book, Integer> booksRepository, CrudRepository<Author, Integer> authorsRepository,
+                           AllBooksSubject allBooksSubject) {
         this.context = new CommandContext(booksRepository, authorsRepository);
+        this.allBooksSubject = allBooksSubject;
     }
 
     @GetMapping
@@ -46,6 +50,7 @@ public class BooksController {
     @PostMapping
     public ResponseEntity<Book> create(@RequestBody Book book) {
         Book created = new CreateBookCommand(context, book).execute();
+        allBooksSubject.add(created);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
